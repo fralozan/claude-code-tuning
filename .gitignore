@@ -1,0 +1,12 @@
+# Nunca versionar estado, credenciales ni datos locales
+settings.local.json
+*.local.json
+.env
+.env.*
+.tgrep/
+history.jsonl
+projects/
+sessions/
+cache/
+*.bak
+.credentials.json
