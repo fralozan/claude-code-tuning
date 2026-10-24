@@ -176,6 +176,21 @@ Notas:
 
 El mismo razonamiento aplica a cualquier otro proveedor (GCP, Azure…) o framework con skills propias.
 
+## Criterio: CLI antes que MCP
+
+Un servidor MCP (o un plugin que lo empaqueta) carga las definiciones de **todas** sus herramientas en
+el contexto, las uses o no, y suele pedir acceso a servicios externos. Si ya existe una herramienta
+de línea de comandos que hace el mismo trabajo, el repositorio prefiere esa:
+
+| En lugar de un MCP/plugin para… | Se usa | Motivo |
+|---|---|---|
+| GitHub (issues, PRs, diffs) | `gh` y `git` | Sin herramientas MCP en el contexto; salida filtrable con `jq` |
+| Buscar o navegar el código | `rg`, `ast-grep`, `tgrep` | Locales, sin servicios externos |
+
+Esto no significa que los MCP sean malos: son la mejor opción cuando no existe alternativa de CLI o
+cuando un proyecto concreto los necesita (navegador para pruebas E2E, un servicio sin CLI…). La
+regla es **añadirlos por proyecto y medirlos con `/context`**, no dejarlos activos globalmente.
+
 ## Plugins de terceros: better-claude
 
 [`better-claude`](https://github.com/midudev/better-claude) es un marketplace de plugins de terceros
@@ -227,6 +242,10 @@ harías con cualquier dependencia. Si prefieres no usar terceros, borra `better-
 
 - No se versionan credenciales, historial ni sesiones (ver `.gitignore`). Si adaptas el repo, revisa
   que `settings.json` no contenga tokens, rutas privadas ni dominios internos antes de publicar tu fork.
+- Cualquier plugin o marketplace (de este repo o de otro) es código que se ejecuta con tus privilegios
+  y puede tocar tus archivos y credenciales. Antes de instalar uno, revisa quién lo mantiene, qué
+  permisos y hooks declara y a qué servicios externos se conecta. Desconfía especialmente de los que
+  ejecutan comandos de shell.
 - `settings.json` incluye reglas `deny` para `.env`, `*.pem` y `*.key`.
 - Los permisos `allow` son de solo lectura (búsquedas, `git diff/log`, `gh ... view`); ampliarlos es
   una decisión tuya.
