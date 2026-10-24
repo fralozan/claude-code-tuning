@@ -41,7 +41,7 @@ claude plugin install aws-core@claude-plugins-official --scope project
 ```
 
 Requiere `uv` y, para llamadas a la API, credenciales de AWS. Las 18 skills sueltas de
-`~/.claude/skills/` suman ~3 100 tokens de descripciones en cada sesión; moverlas fuera evita ese coste.
+`~/.claude/skills/` suman ~3 900 tokens de descripciones (medido con `/context`) en cada sesión; moverlas fuera evita ese coste.
 
 ## Criterio
 
