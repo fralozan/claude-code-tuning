@@ -1,0 +1,19 @@
+# Copiar a la raíz del proyecto como `.ignore` (lo respetan rg y fd; no afecta a git).
+# Evita que las búsquedas devuelvan ruido de archivos que están en git pero no aportan al agente.
+# Para buscar dentro de ellos a propósito: rg --no-ignore ...
+
+# Lockfiles
+composer.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+Cargo.lock
+
+# Minificados y mapas
+*.min.js
+*.min.css
+*.map
+
+# Volcados y datos masivos (ajustar a cada proyecto)
+*.sql.gz
+*.dump

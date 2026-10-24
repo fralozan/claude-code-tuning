@@ -21,6 +21,14 @@
 El script detecta `apt` (Ubuntu/Debian) o `dnf`/`yum` (CentOS/RHEL), instala las dependencias de
 compilación, `rustup`, los crates y Claude Code. Es idempotente. Si cargo ya existe, no lo reinstala.
 
+## Opciones
+
+| Variable | Efecto |
+|---|---|
+| `USE_BINSTALL=1` | Usa [`cargo-binstall`](https://github.com/cargo-bins/cargo-binstall) para descargar binarios precompilados (segundos en vez de minutos). Si falla un crate, compila. Descarga código de terceros: revisa el script antes |
+| `SKIP_SYSTEM_PACKAGES=1` | No ejecuta `apt`/`dnf`; útil en distribuciones no soportadas o si ya tienes las dependencias |
+| `TGREP_GIT`, `TGREP_CRATE` | Origen alternativo de `tgrep` (por defecto, `microsoft/tgrep`) |
+
 ## Notas
 
 - Se instalan con `cargo --locked` para builds reproducibles. La primera compilación tarda varios minutos.

@@ -1,4 +1,11 @@
+---
+paths:
+  - "**/*.php"
+---
+
 # Convenciones PHP
+
+Se carga automáticamente solo al trabajar con archivos `.php`.
 
 Base: **PSR-12** (que extiende PSR-1) y PSR-4 para autoload. Sin dependencia de ningún framework.
 
@@ -22,7 +29,7 @@ Base: **PSR-12** (que extiende PSR-1) y PSR-4 para autoload. Sin dependencia de 
 
 ## Verificación
 
-Configuración lista en `templates/php/` (copiar al proyecto):
+Configuración lista en `templates/php/` del repositorio `claude-code-tuning` (copiar al proyecto):
 
 | Herramienta | Archivo | Comando |
 |---|---|---|
@@ -31,3 +38,11 @@ Configuración lista en `templates/php/` (copiar al proyecto):
 | phpstan | `phpstan.neon` | `vendor/bin/phpstan analyse` |
 
 Tras modificar PHP: `php -l` en los archivos tocados y ejecutar las tres herramientas si el proyecto las tiene.
+
+Las herramientas de verificación se instalan **por proyecto**, no en el sistema:
+
+```bash
+composer require --dev friendsofphp/php-cs-fixer squizlabs/php_codesniffer phpstan/phpstan
+```
+
+Así cada proyecto fija sus versiones y `vendor/bin/...` funciona igual en cualquier máquina.

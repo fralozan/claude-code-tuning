@@ -118,6 +118,9 @@ Preferir siempre la herramienta moderna; usar la clásica solo si la primera no 
 | regex repetidas en repos grandes | `tgrep` | índice de trigramas |
 | regex para encontrar código por forma | `ast-grep` | coincide por estructura, no por texto |
 
+`ast-grep` solo compensa cuando importa la estructura (llamadas, firmas, instanciaciones); para texto usar `rg`.
+Ejemplo: `ast-grep -p 'new $CLASS($$$ARGS)' -l php src/` (`$X` = un nodo, `$$$X` = varios).
+
 ## Ahorro de tokens y memoria
 
 - Limitar la salida: `rg -m`, `head`, `--stat`, `jq` con filtros; nunca volcar salidas largas completas.
@@ -126,7 +129,3 @@ Preferir siempre la herramienta moderna; usar la clásica solo si la primera no 
 - Delegar exploraciones amplias a subagentes para no contaminar el contexto principal.
 - Sugerir `/compact` o una sesión nueva cuando el contexto esté saturado o cambie la tarea.
 - Respuestas breves: resultados y decisiones, sin narrar cada paso.
-
-## PHP
-
-Al trabajar en proyectos PHP, seguir `~/.claude/conventions/php.md` (PSR-12, `strict_types`, herramientas de verificación). No cargarlo en proyectos que no sean PHP.

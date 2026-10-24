@@ -14,7 +14,8 @@ Está pensado para quien usa Claude Code a diario para programar y quiere:
 Es un punto de partida: haz un fork, quita lo que no te sirva y ajusta el resto a tu gusto.
 
 > Desarrollado en Ubuntu (principal). El soporte de CentOS/RHEL (`dnf`/`yum`) está escrito pero aún
-> sin probar en una máquina limpia. No cubre macOS ni Windows.
+> sin probar en una máquina limpia. WSL2 con Ubuntu debería funcionar igual que Ubuntu. macOS, Arch y
+> Alpine no están soportados: el instalador se detiene con un mensaje claro.
 
 ## Inicio rápido
 
@@ -29,6 +30,13 @@ cd ~/claude-code-tuning
 
 Para actualizar una máquina ya configurada: `git pull && ./install.sh`.
 
+Opciones útiles:
+
+```bash
+USE_BINSTALL=1 ./tools/install-tools.sh   # descarga binarios precompilados en vez de compilar (más rápido)
+./install.sh --profile servidor           # además, desactiva skills y conectores de escritorio (ver abajo)
+```
+
 Antes de ejecutar nada, **lee los scripts** (son cortos): instalan paquetes del sistema, descargan
 `rustup` y el instalador oficial de Claude Code, y modifican `~/.claude`.
 
@@ -38,7 +46,9 @@ Antes de ejecutar nada, **lee los scripts** (son cortos): instalan paquetes del 
 |---|---|
 | `claude/CLAUDE.md` | Directivas globales: cómo buscar, qué comandos preferir, cómo ahorrar tokens |
 | `claude/settings.json` | Idioma, modo vim, plugins, permisos de solo lectura y `deny` para secretos |
-| `conventions/php.md` | Estilo PHP (PSR-12) y cómo verificarlo; ejemplo de convenciones por lenguaje |
+| `rules/php.md` | Estilo PHP (PSR-12); **se carga solo al tocar archivos `.php`** (regla con `paths`) |
+| `profiles/` | Ajustes opcionales por entorno, p. ej. `servidor.json` |
+| `templates/ignore.example` | Plantilla de `.ignore` para que `rg`/`fd` omitan lockfiles y minificados |
 | `templates/php/` | `.php-cs-fixer.dist.php`, `phpcs.xml` y `phpstan.neon` para copiar a tus proyectos |
 | `skills/SKILLS.md` | Plugins y skills activos e inactivos, con el motivo de cada decisión |
 | `tools/` | Instalador y guía de las herramientas de línea de comandos |
@@ -97,8 +107,9 @@ Dentro de Claude Code:
 - `/context` — desglose de qué ocupa el contexto (skills, herramientas MCP, memoria, mensajes).
 - `/plugin` — plugins instalados y su estado; permite desactivarlos.
 - `/mcp` — servidores MCP configurados y si conectan.
-- Conectores de la cuenta (Drive, Calendar, etc.) — se gestionan en **claude.ai → Ajustes → Conectores**,
-  no en archivos locales; por eso este repositorio solo puede documentarlos.
+- Conectores de la cuenta (Drive, Calendar, etc.) — se gestionan en **claude.ai → Ajustes → Conectores**
+  para la cuenta entera; en una máquina concreta se pueden dejar de cargar con
+  `"disableClaudeAiConnectors": true` en `settings.json` (ver el perfil `servidor`).
 - Skills en `~/.claude/skills/` y `.claude/skills/` del proyecto — revisa qué carpetas hay.
 
 ### Criterio que aplica este repo
@@ -137,9 +148,10 @@ Para ponerlo en perspectiva: todas las skills de una instalación típica suman 
 de una ventana de 1M (un 5 % de una de 200k). La ganancia por turno es modesta; el valor principal es
 la higiene: menos ruido al elegir qué skill aplicar y menos acceso a datos que no necesitas.
 
-> Las skills marcadas como "claude.ai sync" provienen de **tu cuenta**, no de archivos locales, así que
-> este repositorio no puede activarlas ni desactivarlas. Revisa `/skills` y los ajustes de tu cuenta
-> en claude.ai para gestionarlas en cada máquina.
+> Las skills marcadas como "claude.ai sync" provienen de **tu cuenta**. En una máquina concreta puedes
+> dejar de cargarlas con `"syncClaudeAiSkills": false` (y `"syncClaudeAiPlugins": false` para los
+> plugins) en `~/.claude/settings.json`: es lo que hace `./install.sh --profile servidor`. La clave
+> desactiva **todas** las skills sincronizadas, no una a una.
 
 ### AWS: muy útil cuando el proyecto lo requiere, no para tenerlo siempre
 
@@ -217,15 +229,56 @@ harías con cualquier dependencia. Si prefieres no usar terceros, borra `better-
 
 ## Cómo funciona `install.sh`
 
-- `CLAUDE.md` y `conventions/` se **enlazan** (symlink): un `git pull` los actualiza al instante.
+- `CLAUDE.md` y cada archivo de `rules/` se **enlazan** (symlink) en `~/.claude/`: un `git pull` los
+  actualiza al instante. Tus propias reglas en `~/.claude/rules/` no se tocan.
 - `settings.json` se **fusiona** con `jq`: el repo gana en las claves que define, los permisos se
   unen y lo propio de cada máquina se conserva. Siempre se deja un respaldo `settings.json.bak-<fecha>`.
 - Si ya tenías un `CLAUDE.md` propio, se renombra a `CLAUDE.md.bak-<fecha>`, no se pierde.
-- Los ajustes exclusivos de una máquina van en `~/.claude/settings.local.json`, que nunca se versiona.
+- Lo propio de una máquina se conserva porque la fusión no borra claves que el repo no define. Los
+  ajustes personales de **un proyecto** van en `.claude/settings.local.json` de ese proyecto (capa
+  oficial de Claude Code, fuera de git). No existe una capa `settings.local.json` a nivel de usuario.
+- `--profile <nombre>` fusiona además `profiles/<nombre>.json`.
 - Es idempotente: puedes ejecutarlo varias veces.
 
-**Para deshacer:** borra los enlaces `~/.claude/CLAUDE.md` y `~/.claude/conventions` y restaura los
+**Para deshacer:** borra los enlaces `~/.claude/CLAUDE.md` y `~/.claude/rules/php.md` y restaura los
 `.bak-<fecha>` correspondientes.
+
+### Perfil `servidor`
+
+Para un VPS, EC2 o contenedor sin interfaz gráfica, `./install.sh --profile servidor` añade a
+`settings.json`:
+
+```json
+{ "syncClaudeAiSkills": false, "syncClaudeAiPlugins": false, "disableClaudeAiConnectors": true }
+```
+
+Según la documentación de Claude Code, esto deja de cargar las skills y plugins que tu cuenta de
+claude.ai sincroniza (documentos, navegador, computer-use…) y los conectores (Drive, Calendar…).
+Es opcional y no se aplica por defecto. Si tu versión de Claude Code rechaza alguna clave, `claude doctor`
+lo indicará.
+
+### Cómo se combinan las instrucciones
+
+Los `CLAUDE.md` (global, del proyecto y de subdirectorios) y las reglas de `rules/` **se concatenan**:
+ninguno anula a otro. Los más cercanos al directorio de trabajo se leen al final, pero si dos
+instrucciones se contradicen Claude puede seguir cualquiera. Por eso:
+
+- Mantén cada `CLAUDE.md` por debajo de ~200 líneas (`doctor.sh` lo comprueba).
+- No repitas en un proyecto lo que ya dice el global; añade solo lo específico.
+- `/doctor prompt-audit` detecta instrucciones obsoletas o contradictorias.
+
+### Archivos que no aportan al agente
+
+Claude Code no tiene un `.claudeignore`. Para que las búsquedas no devuelvan ruido de lockfiles o
+archivos minificados que sí están en git, copia la plantilla a la raíz del proyecto:
+
+```bash
+cp ~/claude-code-tuning/templates/ignore.example .ignore
+```
+
+`rg` y `fd` respetan `.ignore` (no afecta a git). Para impedir que Claude **lea** un archivo, usa
+`permissions.deny`, p. ej. `"Read(./.env)"`; ten en cuenta que bloquear también impide leer cuando
+sí hace falta (por ejemplo, depurar un conflicto en `composer.lock`).
 
 ## Adáptalo a tu caso
 
@@ -233,9 +286,9 @@ harías con cualquier dependencia. Si prefieres no usar terceros, borra `better-
 2. Edita `claude/CLAUDE.md`: es tu criterio de trabajo (el idioma de respuesta, qué herramientas
    preferir, cuánto detalle).
 3. Edita `enabledPlugins` en `claude/settings.json` según lo que decidas tras auditar tu instalación.
-4. Sustituye `conventions/php.md` por las convenciones de tus lenguajes; el patrón es: un archivo por
-   lenguaje y una línea en `CLAUDE.md` que diga cuándo leerlo, para **no cargarlo en proyectos que no
-   lo necesitan**.
+4. Sustituye `rules/php.md` por las convenciones de tus lenguajes; el patrón es: un archivo por
+   lenguaje con `paths:` en su cabecera (p. ej. `"**/*.py"`), para que **solo se cargue al trabajar con
+   esos archivos**.
 5. Ejecuta `./doctor.sh` para comprobar el resultado.
 
 ## Seguridad y privacidad
@@ -254,7 +307,9 @@ harías con cualquier dependencia. Si prefieres no usar terceros, borra `better-
 
 **¿Sobrescribe mi configuración?** No: fusiona `settings.json` y respalda lo que reemplaza.
 
-**¿Funciona en macOS o WSL?** No está probado; los scripts asumen `apt` o `dnf`/`yum`.
+**¿Funciona en macOS o WSL?** WSL2 con Ubuntu debería funcionar (usa `apt`). macOS, Arch y Alpine no
+están soportados: `install-tools.sh` se detiene con un mensaje claro; con `SKIP_SYSTEM_PACKAGES=1`
+puedes instalar a mano las dependencias y que el script haga solo lo demás.
 
 **¿Por qué todo está en español?** Es el idioma de trabajo de quien mantiene el repo; `claude/CLAUDE.md`
 y `settings.json` (`"language": "Español"`) son lo primero que querrás cambiar si no es el tuyo.

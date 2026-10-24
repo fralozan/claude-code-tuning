@@ -26,8 +26,10 @@ Origen: <https://betterclaude.dev/> (repositorio `midudev/better-claude`).
 | Conectores de Calendar, Drive y similares | no son útiles al programar y consumen contexto |
 | Skills de AWS (`aws-*`, `amazon-bedrock`, …) | solo activarlas en proyectos que usen AWS |
 
-Los conectores (Calendar, Drive…) se gestionan en la cuenta de claude.ai (Ajustes → Conectores),
-no en archivos locales, por eso no pueden versionarse aquí.
+Los conectores (Calendar, Drive…) se gestionan en la cuenta de claude.ai (Ajustes → Conectores).
+En una máquina concreta se pueden dejar de cargar con `disableClaudeAiConnectors: true`, y las
+skills/plugins sincronizados con `syncClaudeAiSkills: false` y `syncClaudeAiPlugins: false`
+(perfil `profiles/servidor.json`).
 
 ## AWS: Agent Toolkit
 
