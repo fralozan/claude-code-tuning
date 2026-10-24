@@ -20,7 +20,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-command -v jq >/dev/null || { warn "Falta jq (ver tools/install-tools.sh)"; exit 1; }
+command -v jq >/dev/null || { warn "Falta jq: instálalo (sudo apt install jq / sudo dnf install jq / brew install jq) o ejecuta ./tools/install-tools.sh"; exit 1; }
 mkdir -p "$CLAUDE_DIR/rules"
 
 # Enlaza un archivo del repo; respalda lo existente si no es ya el enlace correcto.
@@ -60,7 +60,8 @@ for p in ${PROFILES[@]+"${PROFILES[@]}"}; do merge_settings "$p"; log "Perfil ap
 
 # Plugins (requiere el binario claude)
 if command -v claude >/dev/null; then
-    claude plugin marketplace add midudev/better-claude 2>/dev/null || true
+    claude plugin marketplace add midudev/better-claude >/dev/null 2>&1 \
+        || warn "No se pudo añadir el marketplace better-claude (¿sin clave SSH de GitHub?). Prueba: claude plugin marketplace add https://github.com/midudev/better-claude.git"
     jq -r '.enabledPlugins | to_entries[] | select(.value) | .key | select(endswith("@better-claude"))' \
         "$REPO/claude/settings.json" | while read -r p; do
         claude plugin install "$p" >/dev/null 2>&1 && log "Plugin $p" || warn "No se pudo instalar $p"
@@ -68,4 +69,16 @@ if command -v claude >/dev/null; then
 else
     warn "claude no está instalado: omitiendo plugins"
 fi
-log "Hecho. Ejecutar ./doctor.sh para verificar."
+log "Configuración aplicada."
+
+# Siguientes pasos según lo que falte
+missing=()
+for t in gh cargo rg fd ast-grep tgrep; do command -v "$t" >/dev/null || missing+=("$t"); done
+if [ "${#missing[@]}" -gt 0 ]; then
+    warn "Faltan herramientas: ${missing[*]}"
+    printf '   Siguiente paso: %s/tools/install-tools.sh  (luego abre una shell nueva o ejecuta: . "$HOME/.cargo/env")\n' "$REPO"
+fi
+if [ "${#PROFILES[@]}" -eq 0 ] && [ "$(uname -s)" = "Linux" ] && [ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    printf '   Parece un entorno sin interfaz gráfica: considera %s/install.sh --profile servidor\n' "$REPO"
+fi
+printf '   Para verificar: %s/doctor.sh\n' "$REPO"
