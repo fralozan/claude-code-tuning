@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sintaxis de los scripts
+        run: bash -n install.sh doctor.sh tools/install-tools.sh
+
+      - name: ShellCheck
+        run: shellcheck --severity=warning install.sh doctor.sh tools/install-tools.sh
+
+      - name: JSON válido
+        run: |
+          jq -e . claude/settings.json
+          for f in profiles/*.json; do jq -e . "$f"; done
+
+      - name: Instalación sobre un directorio vacío
+        run: |
+          export CLAUDE_DIR="$RUNNER_TEMP/claude"
+          ./install.sh --profile servidor
+          test -L "$CLAUDE_DIR/CLAUDE.md"
+          test -L "$CLAUDE_DIR/rules/php.md"
+          jq -e '.disableClaudeAiConnectors == true' "$CLAUDE_DIR/settings.json"
