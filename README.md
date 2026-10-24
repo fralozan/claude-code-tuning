@@ -1,7 +1,7 @@
 # claude-code-tuning
 
 Una configuración base, reproducible y comentada para usar [Claude Code](https://claude.com/claude-code)
-en varias máquinas Linux **con los mismos criterios en todas**: qué herramientas usa el agente para
+en varias máquinas Linux y macOS **con los mismos criterios en todas**: qué herramientas usa el agente para
 buscar código, qué skills y plugins están activos (y cuáles no), cómo se ahorran tokens y qué estilo
 de código se espera.
 
@@ -13,9 +13,10 @@ Está pensado para quien usa Claude Code a diario para programar y quiere:
 
 Es un punto de partida: haz un fork, quita lo que no te sirva y ajusta el resto a tu gusto.
 
-> Desarrollado en Ubuntu (principal). El soporte de CentOS/RHEL (`dnf`/`yum`) está escrito pero aún
-> sin probar en una máquina limpia. WSL2 con Ubuntu debería funcionar igual que Ubuntu. macOS, Arch y
-> Alpine no están soportados: el instalador se detiene con un mensaje claro.
+> Desarrollado en Ubuntu (principal). El soporte de CentOS/RHEL (`dnf`/`yum`) y de macOS (Homebrew, 12.3
+> o superior) está escrito pero **aún sin probar** en una máquina limpia. WSL2 con Ubuntu debería
+> funcionar igual que Ubuntu. Arch, Alpine y Windows nativo no están soportados: el instalador se
+> detiene con un mensaje claro.
 
 ## Inicio rápido
 
@@ -307,15 +308,28 @@ sí hace falta (por ejemplo, depurar un conflicto en `composer.lock`).
 
 **¿Sobrescribe mi configuración?** No: fusiona `settings.json` y respalda lo que reemplaza.
 
-**¿Funciona en macOS o WSL?** WSL2 con Ubuntu debería funcionar (usa `apt`). macOS, Arch y Alpine no
-están soportados: `install-tools.sh` se detiene con un mensaje claro; con `SKIP_SYSTEM_PACKAGES=1`
-puedes instalar a mano las dependencias y que el script haga solo lo demás.
+**¿Funciona en macOS o WSL?** WSL2 con Ubuntu debería funcionar (usa `apt`). En macOS el script usa
+Homebrew (requiere Homebrew y las Command Line Tools) y trae `rg`, `fd` y `ast-grep` ya compilados;
+`tgrep` se compila con `cargo`. Los scripts evitan características de bash 4 por la bash 3.2 de macOS.
+Arch y Alpine no están soportados: `install-tools.sh` se detiene con un mensaje claro; con
+`SKIP_SYSTEM_PACKAGES=1` puedes instalar a mano las dependencias y que el script haga solo lo demás.
 
 **¿Por qué todo está en español?** Es el idioma de trabajo de quien mantiene el repo; `claude/CLAUDE.md`
 y `settings.json` (`"language": "Español"`) son lo primero que querrás cambiar si no es el tuyo.
 
 **¿`tgrep` es obligatorio?** No. Si no lo quieres, quítalo de `install-tools.sh` y de `doctor.sh`;
 `rg` cubre la mayoría de los casos.
+
+## Plataformas sin probar: tu ayuda
+
+El mantenedor solo ha probado Ubuntu. **CentOS/RHEL y macOS están escritos pero sin verificar**, y
+dependen de que otras personas los prueben. Si usas una de ellas:
+
+1. Ejecuta `./tools/install-tools.sh`, `./install.sh` y `./doctor.sh`.
+2. Abre un issue con la plantilla "Prueba en una plataforma sin verificar" indicando versión del
+   sistema, resultado y, si falló, el error (o directamente un pull request con la corrección).
+
+Cuando una plataforma tenga confirmaciones, se marcará como probada en este README.
 
 ## Contribuciones
 

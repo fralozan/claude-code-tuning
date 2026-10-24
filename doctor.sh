@@ -15,7 +15,7 @@ check_link() {
 }
 check_link CLAUDE.md claude/CLAUDE.md
 for f in "$REPO"/rules/*.md; do check_link "rules/$(basename "$f")" "rules/$(basename "$f")"; done
-lines=$(wc -l < "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null || echo 0)
+lines=$(wc -l < "$CLAUDE_DIR/CLAUDE.md" 2>/dev/null | tr -d ' ' || echo 0)
 if [ "$lines" -gt 200 ]; then bad "CLAUDE.md tiene $lines líneas (recomendado: menos de 200)"; else ok "CLAUDE.md: $lines líneas (< 200)"; fi
 jq -e . "$CLAUDE_DIR/settings.json" >/dev/null 2>&1 && ok "settings.json válido" || bad "settings.json inválido"
 exit $fail

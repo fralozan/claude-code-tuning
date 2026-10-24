@@ -21,6 +21,12 @@
 El script detecta `apt` (Ubuntu/Debian) o `dnf`/`yum` (CentOS/RHEL), instala las dependencias de
 compilación, `rustup`, los crates y Claude Code. Es idempotente. Si cargo ya existe, no lo reinstala.
 
+## macOS
+
+Requiere [Homebrew](https://brew.sh) y las Command Line Tools (`xcode-select --install`). El script
+instala con `brew` `jq`, `gh`, `git`, `ripgrep`, `fd` y `ast-grep`, y solo compila `tgrep` con `cargo`.
+`USE_BINSTALL` no aplica en macOS. Pensado para macOS 12.3 o superior (necesita `readlink -f`).
+
 ## Opciones
 
 | Variable | Efecto |

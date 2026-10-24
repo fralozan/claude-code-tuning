@@ -38,7 +38,7 @@ for f in "$REPO"/rules/*.md; do link "$f" "$CLAUDE_DIR/rules/$(basename "$f")"; 
 # Fusión de settings.json: el repo gana en claves comunes; las listas de permisos se unen.
 SETTINGS="$CLAUDE_DIR/settings.json"
 merge_settings() {
-    local tmp; tmp="$(mktemp)"
+    local tmp; tmp="$(mktemp "${TMPDIR:-/tmp}/claude-tuning.XXXXXX")"
     jq -s '
         .[0] as $a | .[1] as $b
         | ($a * $b)
@@ -56,7 +56,7 @@ else
     cp "$REPO/claude/settings.json" "$SETTINGS"
     log "settings.json creado"
 fi
-for p in "${PROFILES[@]}"; do merge_settings "$p"; log "Perfil aplicado: $(basename "$p" .json)"; done
+for p in ${PROFILES[@]+"${PROFILES[@]}"}; do merge_settings "$p"; log "Perfil aplicado: $(basename "$p" .json)"; done
 
 # Plugins (requiere el binario claude)
 if command -v claude >/dev/null; then

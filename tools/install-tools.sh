@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Instala las herramientas de línea de comandos. Soporta Ubuntu/Debian (apt) y CentOS/RHEL (dnf/yum).
+# Instala las herramientas de línea de comandos.
+# Soporta Ubuntu/Debian (apt), CentOS/RHEL (dnf/yum) y macOS (Homebrew). WSL2 con Ubuntu funciona como Ubuntu.
 set -euo pipefail
 
 # tgrep (Microsoft) no está en crates.io con este propósito: se instala desde Git.
@@ -19,12 +20,23 @@ warn() { printf '\033[1;33m!!\033[0m %s\n' "$*" >&2; }
 
 die() { printf '\033[1;31mxx\033[0m %s\n' "$*" >&2; exit 1; }
 
-[ "$(uname -s)" = "Linux" ] || die "Solo Linux está soportado (detectado: $(uname -s))."
+OS="$(uname -s)"
+case "$OS" in
+    Linux|Darwin) ;;
+    *) die "Sistema no soportado: $OS (solo Linux y macOS)." ;;
+esac
 
-SUDO=""; [ "$(id -u)" -ne 0 ] && SUDO="sudo"
+SUDO=""; [ "$OS" = "Linux" ] && [ "$(id -u)" -ne 0 ] && SUDO="sudo"
 
 install_system_packages() {
     if [ "$SKIP_SYSTEM_PACKAGES" = "1" ]; then log "Paquetes del sistema omitidos"; return; fi
+    if [ "$OS" = "Darwin" ]; then
+        command -v brew >/dev/null || die "Falta Homebrew: https://brew.sh"
+        xcode-select -p >/dev/null 2>&1 || die "Faltan las Command Line Tools: ejecuta xcode-select --install"
+        log "Paquetes del sistema (Homebrew)"
+        brew install jq gh git ripgrep fd ast-grep   # binarios ya compilados: no se usa cargo para estos
+        return
+    fi
     if command -v apt-get >/dev/null; then
         log "Paquetes del sistema (apt)"
         $SUDO apt-get update
@@ -54,16 +66,18 @@ install_rust() {
 }
 
 install_crates() {
-    if [ "$USE_BINSTALL" = "1" ] && ! command -v cargo-binstall >/dev/null; then
+    if [ "$OS" = "Linux" ] && [ "$USE_BINSTALL" = "1" ] && ! command -v cargo-binstall >/dev/null; then
         log "Instalando cargo-binstall"
         curl -L --proto '=https' --tlsv1.2 -sSf \
             https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash
     fi
-    for c in "${CARGO_CRATES[@]}"; do
-        if [ "$USE_BINSTALL" = "1" ] && cargo binstall -y --locked "$c"; then continue; fi
-        log "cargo install $c"
-        cargo install --locked "$c"
-    done
+    if [ "$OS" = "Linux" ]; then
+        for c in "${CARGO_CRATES[@]}"; do
+            if [ "$USE_BINSTALL" = "1" ] && cargo binstall -y --locked "$c"; then continue; fi
+            log "cargo install $c"
+            cargo install --locked "$c"
+        done
+    fi
     if [ -n "$TGREP_GIT" ]; then
         log "cargo install tgrep ($TGREP_GIT)"
         cargo install --locked --git "$TGREP_GIT" "$TGREP_CRATE"
