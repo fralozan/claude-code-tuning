@@ -49,3 +49,13 @@ Requiere `uv` y, para llamadas a la API, credenciales de AWS. Las 18 skills suel
 
 Cada skill o conector activo añade su descripción al contexto de **todas** las sesiones. Mantener
 activo solo lo que se use a diario y habilitar el resto por proyecto.
+
+## Mods incluidos en el repo
+
+| Mod | Para qué |
+|---|---|
+| `prompt-cache-control` | medidor de la caché de prompts sobre el prompt; `/cache` muestra la tabla por turno y sugiere seguir, `/compact` o `/clear` |
+
+Se instalan en `~/.claude/skills/` desde `mods/` (requiere Claude Code 2.1.287 o superior). Origen y revisión de
+seguridad en `mods/<nombre>/ORIGEN.md`. Opciones (`ttl`, `warnSeconds`, `compactAtTokens`…) en `pluginConfigs`
+de `settings.json` con el id `prompt-cache-control@skills-dir`.

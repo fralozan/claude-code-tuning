@@ -35,6 +35,10 @@ link() {
 link "$REPO/claude/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
 for f in "$REPO"/rules/*.md; do link "$f" "$CLAUDE_DIR/rules/$(basename "$f")"; done
 
+# Mods incluidos en el repo (copia revisada y fijada; ver mods/*/ORIGEN.md)
+mkdir -p "$CLAUDE_DIR/skills"
+for m in "$REPO"/mods/*/; do link "${m%/}" "$CLAUDE_DIR/skills/$(basename "$m")"; done
+
 # Fusión de settings.json: el repo gana en claves comunes; las listas de permisos se unen.
 SETTINGS="$CLAUDE_DIR/settings.json"
 merge_settings() {

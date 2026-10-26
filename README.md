@@ -51,6 +51,7 @@ Antes de ejecutar nada, **lee los scripts** (son cortos): instalan paquetes del 
 | `profiles/` | Ajustes opcionales por entorno, p. ej. `servidor.json` |
 | `templates/ignore.example` | Plantilla de `.ignore` para que `rg`/`fd` omitan lockfiles y minificados |
 | `templates/php/` | `.php-cs-fixer.dist.php`, `phpcs.xml` y `phpstan.neon` para copiar a tus proyectos |
+| `mods/` | Mods de Claude Code incluidos (copia revisada), p. ej. `prompt-cache-control` |
 | `skills/SKILLS.md` | Plugins y skills activos e inactivos, con el motivo de cada decisión |
 | `tools/` | Instalador y guía de las herramientas de línea de comandos |
 | `install.sh` / `doctor.sh` | Aplicar y verificar la configuración |
