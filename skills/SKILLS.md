@@ -45,6 +45,21 @@ claude plugin install aws-core@claude-plugins-official --scope project
 Requiere `uv` y, para llamadas a la API, credenciales de AWS. Las 18 skills sueltas de
 `~/.claude/skills/` suman ~3 900 tokens de descripciones (medido con `/context`) en cada sesión; moverlas fuera evita ese coste.
 
+## Plugins por proyecto
+
+Las skills sueltas de AWS (`aws-*`, `amazon-bedrock`, `launch-with-aws`, `signing-in-to-aws`) se movieron
+de `~/.claude/skills/` a `~/.claude/skills-disabled/` (respaldo local, no versionado). Se activan por proyecto
+con `claude plugin install <plugin>@claude-plugins-official --scope project`.
+
+Ejemplo (`rescate-carritos-ia`: CDK, Lambda, Step Functions, DynamoDB, Bedrock):
+
+| Plugin | Para qué |
+|---|---|
+| `aws-core` | IaC (CDK/CloudFormation) y servicios base |
+| `aws-serverless` | Lambda y Step Functions |
+| `databases-on-aws` | modelado y consultas de DynamoDB |
+| `typescript-lsp` | navegación y diagnósticos; requiere `npm i -g typescript-language-server typescript` |
+
 ## Criterio
 
 Cada skill o conector activo añade su descripción al contexto de **todas** las sesiones. Mantener
