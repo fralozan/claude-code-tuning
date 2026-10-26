@@ -93,8 +93,21 @@ install_claude() {
     fi
 }
 
+# Servidor de lenguaje para el plugin typescript-lsp (opcional: requiere npm)
+install_ts_lsp() {
+    command -v typescript-language-server >/dev/null && return
+    if command -v npm >/dev/null; then
+        log "npm install -g typescript-language-server typescript"
+        npm install -g typescript-language-server typescript \
+            || warn "No se pudo instalar typescript-language-server (¿permisos del prefijo global de npm?)"
+    else
+        warn "npm no está instalado: se omite typescript-language-server (solo lo necesita el plugin typescript-lsp)"
+    fi
+}
+
 install_system_packages
 install_rust
 install_crates
 install_claude
+install_ts_lsp
 log "Listo. Abrir una shell nueva o ejecutar: . \$HOME/.cargo/env  (luego ./doctor.sh)"

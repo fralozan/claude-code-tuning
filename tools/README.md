@@ -6,6 +6,7 @@
 | fd | `fd` | búsqueda de archivos | cargo (`fd-find`) |
 | ast-grep | `ast-grep`, `sg` | búsqueda estructural (AST) | cargo |
 | tgrep | `tgrep` | regex con índice de trigramas ([microsoft/tgrep](https://github.com/microsoft/tgrep)) | cargo `--git` |
+| typescript-language-server | `typescript-language-server` | servidor de lenguaje para el plugin `typescript-lsp` (opcional) | npm global |
 | jq | `jq` | filtrar JSON | apt / dnf |
 | gh | `gh` | GitHub desde CLI | apt / repo oficial en CentOS |
 | git | `git` | control de versiones | apt / dnf |
