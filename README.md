@@ -192,18 +192,55 @@ El mismo razonamiento aplica a cualquier otro proveedor (GCP, Azure…) o framew
 
 ## Criterio: CLI antes que MCP
 
-Un servidor MCP (o un plugin que lo empaqueta) carga las definiciones de **todas** sus herramientas en
-el contexto, las uses o no, y suele pedir acceso a servicios externos. Si ya existe una herramienta
-de línea de comandos que hace el mismo trabajo, el repositorio prefiere esa:
+Un servidor MCP (o un plugin que lo empaqueta) añade a cada sesión los nombres de sus herramientas y
+sus instrucciones, aunque no lo uses; las versiones recientes de Claude Code difieren los esquemas
+completos y los cargan bajo demanda, pero el coste fijo, el ruido al elegir herramienta y la
+superficie de permisos siguen ahí, y suele pedir acceso a servicios externos. Si ya existe una
+herramienta de línea de comandos que hace el mismo trabajo, el repositorio prefiere esa:
 
 | En lugar de un MCP/plugin para… | Se usa | Motivo |
 |---|---|---|
 | GitHub (issues, PRs, diffs) | `gh` y `git` | Sin herramientas MCP en el contexto; salida filtrable con `jq` |
 | Buscar o navegar el código | `rg`, `ast-grep`, `tgrep` | Locales, sin servicios externos |
+| Leer y escribir archivos, Git | Herramientas nativas de Claude Code y `git` | Un MCP de filesystem/git duplica lo que ya existe |
+| Cloudflare | `wrangler` | CLI oficial, cubre despliegue, logs y recursos |
 
 Esto no significa que los MCP sean malos: son la mejor opción cuando no existe alternativa de CLI o
 cuando un proyecto concreto los necesita (navegador para pruebas E2E, un servicio sin CLI…). La
 regla es **añadirlos por proyecto y medirlos con `/context`**, no dejarlos activos globalmente.
+
+### MCP recomendados por proyecto
+
+| Servidor | Cuándo | Notas |
+|---|---|---|
+| [Context7](https://github.com/upstash/context7) | Proyectos con librerías que cambian a menudo | Documentación por versión; evita APIs inventadas u obsoletas. Envía nombres de librerías y consultas a Upstash |
+| [Playwright](https://github.com/microsoft/playwright-mcp) | Frontend, pruebas E2E | Elegir este **o** Chrome DevTools, no ambos |
+| [Chrome DevTools](https://github.com/ChromeDevTools/chrome-devtools-mcp) | Depurar rendimiento, red y consola | Se solapa con Playwright y con Claude in Chrome |
+| [Supabase](https://supabase.com/docs/guides/getting-started/mcp) | Solo si el proyecto usa Supabase | Siempre `read_only=true` y `project_ref`; nunca contra producción. Los datos leídos pueden contener instrucciones inyectadas |
+| Linear | Solo si el equipo gestiona issues en Linear | No hay CLI oficial equivalente |
+
+```bash
+# En la raíz del proyecto. --scope project escribe .mcp.json (versionado, compartido con el equipo);
+# usa --scope local para dejarlo solo en tu máquina.
+claude mcp add --scope project context7 -- npx -y @upstash/context7-mcp
+claude mcp add --scope project playwright -- npx -y @playwright/mcp@latest
+claude mcp add --scope project chrome-devtools -- npx -y chrome-devtools-mcp@latest
+claude mcp add --scope project --transport http supabase \
+  "https://mcp.supabase.com/mcp?project_ref=<ref>&read_only=true"
+```
+
+No se recomiendan GitHub MCP ni Filesystem/Git MCP (ver la tabla anterior). Para desactivar un
+servidor sin perder su configuración, guarda su entrada y elimínalo:
+
+```bash
+mkdir -p ~/.claude/mcp-disabled
+jq '{"<nombre>": .mcpServers["<nombre>"]}' ~/.claude.json > ~/.claude/mcp-disabled/<nombre>.json
+claude mcp remove <nombre> -s user
+# Restaurar: claude mcp add-json <nombre> "$(jq -c '.["<nombre>"]' ~/.claude/mcp-disabled/<nombre>.json)" -s user
+```
+
+`aws configure agent-toolkit` deja, además de las skills, un servidor `aws-mcp` en el ámbito de
+usuario; mover las skills no lo desactiva.
 
 ## Plugins de terceros: better-claude
 

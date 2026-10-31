@@ -48,7 +48,9 @@ Requiere `uv` y, para llamadas a la API, credenciales de AWS. Las 18 skills suel
 ## Plugins por proyecto
 
 Las skills sueltas de AWS (`aws-*`, `amazon-bedrock`, `launch-with-aws`, `signing-in-to-aws`) se movieron
-de `~/.claude/skills/` a `~/.claude/skills-disabled/` (respaldo local, no versionado). Se activan por proyecto
+de `~/.claude/skills/` a `~/.claude/skills-disabled/` (respaldo local, no versionado), y el servidor
+`aws-mcp` que instala el toolkit se eliminó del ámbito de usuario con respaldo en
+`~/.claude/mcp-disabled/aws-mcp.json`. Se activan por proyecto
 con `claude plugin install <plugin>@claude-plugins-official --scope project`.
 
 Ejemplo (`rescate-carritos-ia`: CDK, Lambda, Step Functions, DynamoDB, Bedrock):
